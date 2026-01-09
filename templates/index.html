@@ -44,28 +44,34 @@ html, body {
     z-index: 1;
 }
 
-/* ===== CENTER UI ===== */
+/* ===== UI CONTAINER (ALIGNED) ===== */
+#ui-wrapper {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+/* ===== UI BOX ===== */
 #ui {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     width: 420px;
-    padding: 35px;
+    padding: 36px 34px;
     background: linear-gradient(145deg, #050505, #0e0e0e);
     border-radius: 18px;
     box-shadow:
         0 0 30px rgba(255,255,255,0.15),
         inset 0 0 20px rgba(255,255,255,0.05);
     text-align: center;
-    z-index: 5;
     animation: floatUI 6s ease-in-out infinite;
 }
 
 @keyframes floatUI {
-    50% { transform: translate(-50%, -55%); }
+    50% { transform: translateY(-12px); }
 }
 
+/* ===== TEXT ===== */
 h1 {
     margin: 0;
     font-size: 32px;
@@ -73,13 +79,14 @@ h1 {
 }
 
 p {
+    margin: 10px 0 22px;
     color: #aaa;
     font-size: 14px;
-    margin-top: 8px;
+    line-height: 1.4;
 }
 
+/* ===== INPUTS ===== */
 input {
-    margin-top: 20px;
     width: 100%;
     padding: 14px;
     background: #111;
@@ -92,8 +99,8 @@ input {
 }
 
 button {
-    margin-top: 15px;
     width: 100%;
+    margin-top: 14px;
     padding: 14px;
     background: #1a1a1a;
     border: none;
@@ -113,16 +120,18 @@ button:hover {
 
 <div id="space"></div>
 
-<div id="ui">
-    <h1>Bloxify</h1>
-    <p>Bloxify new-ish verification system ready to protect your servers!</p>
+<div id="ui-wrapper">
+    <div id="ui">
+        <h1>Bloxify</h1>
+        <p>Bloxify new-ish verification system ready to protect your servers!</p>
 
-    <input id="email" placeholder="Enter your email">
-    <button onclick="submitEmail()">Verify</button>
+        <input id="email" placeholder="Enter your email">
+        <button onclick="submitEmail()">Verify</button>
+    </div>
 </div>
 
 <script>
-/* ===== CREATE FLOATING STARS ===== */
+/* ===== FLOATING STARS ===== */
 const STAR_COUNT = 80;
 
 for (let i = 0; i < STAR_COUNT; i++) {
@@ -167,7 +176,7 @@ for (let i = 0; i < STAR_COUNT; i++) {
     document.body.appendChild(star);
 }
 
-/* ===== SEND EMAIL TO BACKEND ===== */
+/* ===== SEND EMAIL ===== */
 function submitEmail() {
     fetch("/submit", {
         method: "POST",
